@@ -21,7 +21,7 @@ int main() {
 
     std::cout << std::endl;
 
-    LocalFree(payload);
+    
 
     // Fin de la récupération du shellcode chiffré du serveur http
     
@@ -43,7 +43,8 @@ int main() {
     std::cout << std::endl;
 
     // Fin du déchiffrement du shellcode 
-
+    
+    LocalFree(payload);
     return 0;
 
 }
