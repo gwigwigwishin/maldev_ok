@@ -1,7 +1,7 @@
 # Etape 1 : Serveur HTTP et chiffrement du shellcode
+Fichiers : HTTPClient.h, HTTPClient.cpp
 
 # Etape 2 : Récupération du shellcode chiffré
-Fichiers : HTTPClient.h, HTTPClient.cpp
 Premier main avec les fonctions....
 
 # Etape 3 : Déchiffrement du shellcode
