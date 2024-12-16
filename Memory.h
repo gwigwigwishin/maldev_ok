@@ -1,8 +1,9 @@
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef INJECTION_H
+#define INJECTION_H
 
 #include <windows.h>
 
-bool injectShellcodeLocal(PBYTE shellcode, SIZE_T shellcodeSize);
+// Déclaration de la fonction InjectShellcode
+bool injectShellcode(LPVOID shellcode, SIZE_T shellcodeSize, DWORD targetPid);
 
-#endif
+#endif // INJECTION_H
