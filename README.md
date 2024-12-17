@@ -16,3 +16,6 @@ Mise à jour de main avec les fonctions....
 Fichier : http_server.py
 Mise à jour de la fonction
 
+# Bonus numéro dos : Masquer l'appel aux fonctions de WinAPI
+Fichier : Memory.cpp
+Mise à jour du fichier
