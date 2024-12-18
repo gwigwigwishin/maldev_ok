@@ -3,9 +3,14 @@
 
 |**Fichier/Dossier**|**Description**|
 |---|---|
-|``| 
 |`main.cpp`|Code source principal du loader.|
-|`http_server.py`|Script Python servant le shellcode chiffré.|
+|`Decrypt.cpp`|Implémente une fonction pour déchiffrer un payload avec un XOR simple.|
+|`Decrypt.h`|Déclare la fonction `decrypt` pour le déchiffrement XOR.|
+|`HTTPClient.cpp`|Récupère le shellcode chiffré depuis un serveur HTTP via une requête GET.|
+|`HTTPClient.h`|Déclare la fonction `getHTTPPayload` pour obtenir les données HTTP.|
+|`Memory.cpp`|Injecte et exécute un shellcode dans un processus cible via `CreateRemoteThread`.|
+|`Memory.h`|Déclare la fonction `injectShellcode` pour l'injection de code distant.|
+|`http_server.py`|Script Python servant le shellcode chiffré via le chemin `/get`.|
 |`README.md`|Instructions d'utilisation (ce fichier).|
 
 ## **Résumé des Objectifs Réalisés**
