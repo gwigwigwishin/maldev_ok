@@ -29,7 +29,7 @@
 |**Points Bonus**|**Statut**|
 |---|---|
 |GetModuleHandle & GetProcAddress Masking|✅ Fait|
-|Custom GetModuleHandle & GetProcAddress|✅ Fait (+2)|
+|Custom GetModuleHandle & GetProcAddress|❌ Pas fait|
 |API Hashing|❌ Pas fait|
 |---|---|
 |RC4 Encryption|❌ Pas fait|
