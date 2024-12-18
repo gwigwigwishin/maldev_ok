@@ -31,10 +31,10 @@
 |---|---|
 |Random Key on Download|✅ Fait (+2)|
 |---|---|
-|Injection via PID|✅ Fait|
-|Injection via Process Name|✅ Fait (+2)|
+|Injection via PID|❌ Pas fait|
+|Injection via Process Name|❌ Pas fait|
 |---|---|
-|Overwrite Shellcode Buffer with Zeros|✅ Fait (+1)|
+|Overwrite Shellcode Buffer with Zeros|❌ Pas fait|
 |---|---|
 |Use NTDLL Functions|❌ Pas fait|
 |---|---|
